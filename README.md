@@ -1,9 +1,9 @@
 # Facebook Public Post Scraper
 
 Small Python script that uses `crawl4ai` to scrape publicly visible Facebook post/page content and save it as markdown.
-
+## usage
+python run_with_retries.py "url"
 ## Project Files
-
 - `scrape_public.py`: main scraper script
 - `requirements.txt`: Python dependencies
 - `.gitignore`: files/folders excluded from git
