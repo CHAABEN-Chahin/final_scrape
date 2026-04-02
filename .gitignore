@@ -26,3 +26,9 @@ Thumbs.db
 
 # Generated scraper output
 fb_post_output.md
+
+# Generated pipeline outputs
+workflow_output/
+
+# Local runtime artifacts
+*.log
