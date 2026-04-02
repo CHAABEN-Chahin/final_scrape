@@ -5,8 +5,11 @@ import os
 import time
 from email.message import Message
 
+from env_loader import load_env
 from parser import WorkflowEmailParseError, parse_email_message
 from scraper_pipeline import execute_workflow
+
+load_env()
 
 
 def connect_imap(host: str, port: int, username: str, password: str) -> imaplib.IMAP4_SSL:

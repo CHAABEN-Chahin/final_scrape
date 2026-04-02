@@ -3,6 +3,10 @@ import os
 from urllib import request
 from urllib.error import HTTPError, URLError
 
+from env_loader import load_env
+
+load_env()
+
 
 def _post_json(endpoint: str, api_key: str, payload: dict, timeout: int = 30) -> dict:
     data = json.dumps(payload).encode("utf-8")

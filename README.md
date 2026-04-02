@@ -65,6 +65,40 @@ If needed:
 python -m playwright install chromium
 ```
 
+### 4) Configure Environment Variables
+
+Copy the example file and fill your real values:
+
+Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Windows cmd:
+
+```bat
+copy .env.example .env
+```
+
+macOS/Linux:
+
+```bash
+cp .env.example .env
+```
+
+Then edit `.env` and set:
+
+- `EMAIL_HOST`
+- `EMAIL_PORT`
+- `EMAIL_USER`
+- `EMAIL_PASS`
+- `EMAIL_FOLDER`
+- `LLM_API_URL`
+- `LLM_API_KEY`
+- `VLM_API_URL`
+- `VLM_API_KEY`
+
 ## Email Format (Trigger Contract)
 
 - Subject must be exactly: `facebook - <project_name>`
@@ -90,23 +124,6 @@ python scraper_pipeline.py my_project "https://www.facebook.com/share/p/xxxxxxxx
 Output JSON is saved in `workflow_output/`.
 
 ### B) Run Email Listener
-
-Set environment variables first.
-
-Windows PowerShell:
-
-```powershell
-$env:EMAIL_HOST="imap.gmail.com"
-$env:EMAIL_PORT="993"
-$env:EMAIL_USER="your_email@example.com"
-$env:EMAIL_PASS="your_app_password"
-$env:EMAIL_FOLDER="INBOX"
-
-$env:LLM_API_URL="https://your-llm-endpoint"
-$env:LLM_API_KEY="your_llm_key"
-$env:VLM_API_URL="https://your-vlm-endpoint"
-$env:VLM_API_KEY="your_vlm_key"
-```
 
 Then start listener:
 
