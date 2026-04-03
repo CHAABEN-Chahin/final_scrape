@@ -1,6 +1,6 @@
 # Facebook Email-Triggered Scraper Pipeline
 
-This project scrapes publicly visible Facebook content from a URL received by email, retries automatically when scraping is unstable, filters the output, and prepares payloads for LLM and VLM APIs.
+This project scrapes publicly visible Facebook content from a URL received by email, retries automatically when scraping is unstable, filters the output, runs image analysis with Ollama VLM, and then sends text + VLM output to Groq LLM for a final answer.
 
 ## Architecture
 
@@ -10,7 +10,7 @@ This project scrapes publicly visible Facebook content from a URL received by em
 - `parser.py`: validates subject and extracts project name + URL
 - `scraper_pipeline.py`: orchestrates retry scraper + filter + AI prep
 - `filter.py`: keeps only post text, image URLs, source URL, poster name
-- `ai_pipeline.py`: LLM/VLM API integration placeholders
+- `ai_pipeline.py`: Ollama VLM + Groq LLM integration (chained)
 
 ## Prerequisites
 
@@ -94,10 +94,23 @@ Then edit `.env` and set:
 - `EMAIL_USER`
 - `EMAIL_PASS`
 - `EMAIL_FOLDER`
-- `LLM_API_URL`
-- `LLM_API_KEY`
-- `VLM_API_URL`
-- `VLM_API_KEY`
+- `GROQ_API_URL`
+- `GROQ_API_KEY`
+- `GROQ_LLM_MODEL`
+- `GROQ_LLM_SYSTEM_PROMPT`
+- `OLLAMA_VLM_MODEL`
+- `OLLAMA_VLM_PROMPT`
+
+Notes for Ollama VLM:
+
+- Authenticate once in terminal with `ollama login`.
+- Pull your model (example): `ollama pull qwen3.5:397b-cloud`.
+- No VLM API key is required in this project for Ollama usage.
+
+Notes for Groq LLM:
+
+- Set `GROQ_API_KEY` in `.env`.
+- The LLM stage runs after VLM and combines post text + VLM output.
 
 ## Email Format (Trigger Contract)
 
@@ -122,6 +135,12 @@ python scraper_pipeline.py my_project "https://www.facebook.com/share/p/xxxxxxxx
 ```
 
 Output JSON is saved in `workflow_output/`.
+
+### C) Test VLM + LLM Together (manual local test)
+
+```bash
+python test_llm_vlm_together.py --image "C:/path/to/image.jpg" --text "Paste sample post text here"
+```
 
 ### B) Run Email Listener
 
