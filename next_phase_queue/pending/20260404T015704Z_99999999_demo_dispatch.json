@@ -1,0 +1,16 @@
+{
+  "created_at_utc": "20260404T015704Z",
+  "source_job_file": "workflow_queue\\processed\\99999999_demo_dispatch.json",
+  "message_id": "demo1",
+  "project_name": "proj_x",
+  "source_url": "https://facebook.com/post-x",
+  "conclusion_two_sentences": "Phrase one. Phrase two.",
+  "price": "3000 TND",
+  "deadline": "20/05/2026",
+  "domain": "construction",
+  "workflow_output_file": "",
+  "final_decision": {
+    "validated": true,
+    "next_phase_ready": true
+  }
+}

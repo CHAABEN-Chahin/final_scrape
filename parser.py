@@ -3,8 +3,12 @@ from email.header import decode_header
 from email.message import Message
 from html import unescape
 
-SUBJECT_PREFIX = "facebook - "
+SUPPORTED_PREFIXES = {
+    "facebook": "facebook - ",
+    "linkedin": "linkedin - ",
+}
 URL_PATTERN = re.compile(r"https?://[^\s<>()\"']+")
+SUBJECT_PATTERN = re.compile(r"^(facebook|linkedin)\s*-\s*(.+)$", flags=re.IGNORECASE)
 
 
 class WorkflowEmailParseError(ValueError):
@@ -71,34 +75,38 @@ def extract_email_body(message: Message) -> str:
     return ""
 
 
-def parse_subject(subject: str) -> str:
+def parse_subject(subject: str) -> tuple[str, str]:
     decoded_subject = decode_mime_header(subject)
-    if not decoded_subject.lower().startswith(SUBJECT_PREFIX):
-        raise WorkflowEmailParseError(
-            f"Invalid subject format. Expected: '{SUBJECT_PREFIX}<project_name>'"
-        )
+    match = SUBJECT_PATTERN.match(decoded_subject.strip())
+    if not match:
+        expected = " or ".join(f"'{p}<project_name>'" for p in SUPPORTED_PREFIXES.values())
+        raise WorkflowEmailParseError(f"Invalid subject format. Expected: {expected}")
 
-    project_name = decoded_subject[len(SUBJECT_PREFIX) :].strip()
+    matched_platform = match.group(1).lower()
+    project_name = match.group(2).strip().strip('"').strip("'")
     if not project_name:
         raise WorkflowEmailParseError("Project name is missing in subject.")
 
-    return project_name
+    return matched_platform, project_name
 
 
-def extract_facebook_url(body: str) -> str:
+def extract_platform_url(body: str, platform: str) -> str:
     matches = URL_PATTERN.findall(body)
+    host_marker = "facebook.com" if platform == "facebook" else "linkedin.com"
     for url in matches:
-        if "facebook.com" in url.lower():
+        if host_marker in url.lower():
             return url
-    raise WorkflowEmailParseError("No Facebook URL found in email body.")
+
+    raise WorkflowEmailParseError(f"No {platform} URL found in email body.")
 
 
 def parse_email_message(message: Message) -> dict:
-    project_name = parse_subject(message.get("Subject", ""))
+    platform, project_name = parse_subject(message.get("Subject", ""))
     body = extract_email_body(message)
-    url = extract_facebook_url(body)
+    url = extract_platform_url(body, platform)
 
     return {
+        "platform": platform,
         "project_name": project_name,
         "url": url,
         "subject": decode_mime_header(message.get("Subject", "")),

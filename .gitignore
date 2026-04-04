@@ -27,6 +27,7 @@ Thumbs.db
 
 # Generated scraper output
 fb_post_output.md
+linkedin_post_output.md
 
 # Generated pipeline outputs
 workflow_output/

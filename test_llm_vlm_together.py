@@ -46,8 +46,10 @@ def main() -> None:
     vlm_model = os.getenv("OLLAMA_VLM_MODEL", "qwen3.5:397b-cloud").strip()
     vlm_prompt = os.getenv(
         "OLLAMA_VLM_PROMPT",
-        "What is in this image? Be concise.",
+        "Extract tender details from this image in JSON.",
     ).strip()
+
+    platform = "facebook"
 
     vlm_result = run_ollama_vlm_on_local_images(
         image_paths=[str(image_path)],
@@ -61,11 +63,15 @@ def main() -> None:
         "post_text": args.text,
         "images": [str(image_path)],
     }
-    llm_result = send_to_llm(args.project_name, filtered_payload, vlm_result)
+    llm_result = send_to_llm(args.project_name, filtered_payload, vlm_result, platform)
 
     result = {
         "vlm": vlm_result,
         "llm": llm_result,
+        "final_decision": {
+            "validated": bool(llm_result.get("validated", False)),
+            "next_phase_ready": bool(llm_result.get("next_phase_ready", False)),
+        },
     }
     print(json.dumps(result, ensure_ascii=False, indent=2))
 

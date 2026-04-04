@@ -1,0 +1,17 @@
+{
+  "queued_at_utc": "20260404T032812Z",
+  "message_id": "18179",
+  "platform": "linkedin",
+  "project_name": "koko",
+  "url": "https://www.linkedin.com/posts/mamadou-dia-407004274_leadership-management-softskills-share-7444102059093680128-rCUf?utm_source=social_share_send&utm_medium=member_desktop_web&rcm=ACoAAF9ysK0Bskw1_hpGD8VxOUJho6VUmTMH1Kc",
+  "email_subject": "linkedin - koko",
+  "email_from": "Chahin CHAABEN <chahin.chaaben@supcom.tn>",
+  "processed_at_utc": "20260404T032818Z",
+  "status": "processed",
+  "workflow_output_file": "workflow_output\\koko_20260404T032818Z.json",
+  "final_decision": {
+    "validated": false,
+    "next_phase_ready": false
+  },
+  "next_phase_payload": null
+}

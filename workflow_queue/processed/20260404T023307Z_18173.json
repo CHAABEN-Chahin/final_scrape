@@ -1,0 +1,16 @@
+{
+  "queued_at_utc": "20260404T023307Z",
+  "message_id": "18173",
+  "project_name": "Nasij",
+  "url": "https://www.facebook.com/permalink.php?story_fbid=pfbid02LhyLEWyTyDsU51dwXfmtTQghWU5ZF1W96LVg8eUTddhNFH2twm6Ys1n6qaJ96SSkl&id=100084019087375",
+  "email_subject": "facebook - Nasij",
+  "email_from": "Chahin CHAABEN <chahin.chaaben@supcom.tn>",
+  "processed_at_utc": "20260404T023429Z",
+  "status": "processed",
+  "workflow_output_file": "workflow_output\\nasij_20260404T023429Z.json",
+  "final_decision": {
+    "validated": false,
+    "next_phase_ready": false
+  },
+  "next_phase_payload": null
+}

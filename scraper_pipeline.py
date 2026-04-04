@@ -1,11 +1,14 @@
 import argparse
 import asyncio
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from ai_pipeline import run_ai_preparation
 from filter import filter_scraped_markdown
+from filter_linkedin import filter_linkedin_markdown
+from run_linkedin_with_retries import OUTPUT_FILE as LINKEDIN_OUTPUT_FILE
+from run_linkedin_with_retries import run_linkedin_with_retries
 from run_with_retries import OUTPUT_FILE, run_with_retries
 
 
@@ -17,35 +20,91 @@ def slugify(name: str) -> str:
     return collapsed.strip("_") or "project"
 
 
-def run_scraper_with_retry(url: str) -> str:
-    success = asyncio.run(run_with_retries(url))
+def run_scraper_with_retry(url: str, platform: str) -> str:
+    if platform == "facebook":
+        success = asyncio.run(run_with_retries(url))
+        output_file = OUTPUT_FILE
+    elif platform == "linkedin":
+        success = asyncio.run(run_linkedin_with_retries(url))
+        output_file = LINKEDIN_OUTPUT_FILE
+    else:
+        raise RuntimeError(f"Unsupported platform: {platform}")
+
     if not success:
-        raise RuntimeError("Scraping failed after max retries.")
+        raise RuntimeError(f"{platform} scraping failed after max retries.")
 
-    if not OUTPUT_FILE.exists():
-        raise RuntimeError("Expected scrape output file was not generated.")
+    if not output_file.exists():
+        raise RuntimeError(f"Expected {platform} scrape output file was not generated.")
 
-    markdown = OUTPUT_FILE.read_text(encoding="utf-8")
+    markdown = output_file.read_text(encoding="utf-8")
     if not markdown.strip():
-        raise RuntimeError("Scrape output is empty after reported success.")
+        raise RuntimeError(f"{platform} scrape output is empty after reported success.")
 
     return markdown
 
 
-def execute_workflow(project_name: str, source_url: str, output_dir: str = "workflow_output") -> dict:
-    markdown = run_scraper_with_retry(source_url)
-    filtered = filter_scraped_markdown(markdown=markdown, source_url=source_url)
-    ai_payload = run_ai_preparation(project_name=project_name, filtered_payload=filtered)
+def build_filter_diagnostics(platform: str, markdown: str, filtered: dict) -> dict:
+    post_text = str(filtered.get("post_text", "") or "")
+    images = filtered.get("images", []) or []
+    chosen_image = images[0] if images else ""
 
-    timestamp = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+    return {
+        "platform": platform,
+        "raw_markdown_chars": len(markdown),
+        "raw_markdown_lines": len(markdown.splitlines()),
+        "selected_caption_chars": len(post_text),
+        "selected_caption_lines": len([line for line in post_text.splitlines() if line.strip()]),
+        "selected_images_count": len(images),
+        "selected_images_preview": images[:3],
+        "chosen_image": chosen_image,
+        "poster_name": str(filtered.get("poster_name", "") or ""),
+        "has_caption": bool(post_text.strip()),
+        "has_images": len(images) > 0,
+        "caption_preview": post_text[:400],
+    }
+
+
+def execute_workflow(
+    project_name: str,
+    source_url: str,
+    platform: str,
+    output_dir: str = "workflow_output",
+) -> dict:
+    markdown = run_scraper_with_retry(source_url, platform)
+    if platform == "linkedin":
+        filtered = filter_linkedin_markdown(markdown=markdown, source_url=source_url)
+    else:
+        filtered = filter_scraped_markdown(markdown=markdown, source_url=source_url)
+
+    filter_diagnostics = build_filter_diagnostics(platform=platform, markdown=markdown, filtered=filtered)
+    print(
+        "Filter diagnostics:",
+        f"platform={platform}",
+        f"caption_chars={filter_diagnostics['selected_caption_chars']}",
+        f"images={filter_diagnostics['selected_images_count']}",
+    )
+    if filter_diagnostics["chosen_image"]:
+        print(f"Chosen image: {filter_diagnostics['chosen_image']}")
+    else:
+        print("Chosen image: <none>")
+
+    ai_payload = run_ai_preparation(
+        project_name=project_name,
+        filtered_payload=filtered,
+        platform=platform,
+    )
+
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
 
     result = {
+        "platform": platform,
         "project_name": project_name,
         "source_url": source_url,
         "timestamp_utc": timestamp,
         "filtered": filtered,
+        "filter_diagnostics": filter_diagnostics,
         "ai_preparation": ai_payload,
     }
 
@@ -59,10 +118,11 @@ def execute_workflow(project_name: str, source_url: str, output_dir: str = "work
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Run scrape + filter + AI preparation pipeline for one Facebook URL."
+        description="Run scrape + filter + AI preparation pipeline for one Facebook/LinkedIn URL."
     )
+    parser.add_argument("platform", choices=["facebook", "linkedin"], help="Source platform")
     parser.add_argument("project_name", help="Project name from email subject")
-    parser.add_argument("url", help="Facebook URL extracted from email")
+    parser.add_argument("url", help="Post URL extracted from email")
     parser.add_argument(
         "--output-dir",
         default="workflow_output",
@@ -74,6 +134,7 @@ def parse_args() -> argparse.Namespace:
 if __name__ == "__main__":
     args = parse_args()
     output = execute_workflow(
+        platform=args.platform,
         project_name=args.project_name,
         source_url=args.url,
         output_dir=args.output_dir,

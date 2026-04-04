@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 
-def load_env(env_path: str = ".env") -> None:
+def load_env(env_path: str = ".env", override_existing: bool = True) -> None:
     path = Path(env_path)
     if not path.exists() or not path.is_file():
         return
@@ -17,5 +17,8 @@ def load_env(env_path: str = ".env") -> None:
         key, value = line.split("=", 1)
         key = key.strip()
         value = value.strip().strip('"').strip("'")
-        if key and key not in os.environ:
+        if not key:
+            continue
+
+        if override_existing or key not in os.environ:
             os.environ[key] = value

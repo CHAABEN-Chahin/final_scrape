@@ -1,0 +1,17 @@
+{
+  "queued_at_utc": "20260404T033437Z",
+  "message_id": "18180",
+  "platform": "linkedin",
+  "project_name": "app",
+  "url": "https://www.linkedin.com/posts/what-does-scalable-player-verification-look-share-7407370119116513280-102J?utm_source=social_share_send&utm_medium=member_desktop_web&rcm=ACoAAF9ysK0Bskw1_hpGD8VxOUJho6VUmTMH1Kc",
+  "email_subject": "linkedin - app",
+  "email_from": "Chahin CHAABEN <chahin.chaaben@supcom.tn>",
+  "processed_at_utc": "20260404T033453Z",
+  "status": "processed",
+  "workflow_output_file": "workflow_output\\app_20260404T033453Z.json",
+  "final_decision": {
+    "validated": false,
+    "next_phase_ready": false
+  },
+  "next_phase_payload": null
+}
